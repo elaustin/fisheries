@@ -1,8 +1,8 @@
 # Load libraries ---------------------------------------------------------------
 library(pacman)
 
-p_load("shiny","dplyr","lubridate","xlsx","scales",
-       "DT","leaflet","plotly","devtools", "yaml","data.table")
+p_load("shiny","dplyr","lubridate","scales",
+       "DT","leaflet","devtools", "yaml","data.table")
 
 p_load_gh('ramnathv/rCharts')
 
