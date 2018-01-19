@@ -2,7 +2,7 @@
 library(pacman)
 
 p_load("shiny","dplyr","lubridate","scales",
-       "DT","leaflet","devtools", "yaml","data.table")
+       "DT","leaflet","devtools", "yaml","data.table","shinythemes")
 
 p_load_gh('ramnathv/rCharts')
 
