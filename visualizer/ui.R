@@ -1,12 +1,4 @@
-# Load libraries ---------------------------------------------------------------
-library(shiny)
-library(shinythemes)
 
-# Plot libraries for outputs
-require(rCharts)
-require(leaflet)
-require(DT)
-require(plotly)
 
 # Adjustments
 h3.align <- 'center'

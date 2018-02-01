@@ -43,7 +43,7 @@ shinyServer(function(input, output, session) {
                 min     = casesMin, 
                 max     = casesMax, 
                 step    = 1,
-                value   = c(casesMin, casesMax),
+                value   = 0,
                 ticks   = T,
                 sep     = "")
   })
@@ -127,18 +127,7 @@ shinyServer(function(input, output, session) {
     temp
   })
   
-  salesByLocation <- reactive({
-    orders.extended.filtered() %>%
-      group_by(bikeshop.name, longitude, latitude) %>%
-      summarise(total.sales = sum(price.extended)) %>%
-      mutate(popup = paste0(bikeshop.name, 
-                            ": ", 
-                            scales::dollar(total.sales)))
-  })
-  
-  salesByState <- reactive({
-    aggregateByState(orders.extended.filtered()) # Helper function
-  })
+ 
   
   topNsales <- reactive({
     # Helper function
@@ -146,17 +135,6 @@ shinyServer(function(input, output, session) {
     temp
     
   })
-  
-  salesByUnitPrice <- reactive({
-    orders.extended.filtered() %>%
-      group_by(product = Type, category2, Cases) %>%
-      summarize(total.sales = sum(price.extended),
-                total.qty = sum(Cases)) %>%
-      ungroup() %>%
-      mutate(pct.total.sales = total.sales / sum(total.sales),
-             pct.total.qty = total.qty / sum(total.qty))
-  })
-  
   
   # Plots on Analysis Tab ------------------------------------------------
   
@@ -291,22 +269,23 @@ shinyServer(function(input, output, session) {
   # 
   # 
   # 
-  # # Data and button on Data Tab-------------------------------------------
-  # 
-  # output$table <- DT::renderDataTable({orders.extended.filtered()},
-  #                                     rownames = F,
-  #                                     options = list(bFilter = FALSE, 
-  #                                                    iDisplayLength = 10)
-  # )
-  # 
-  # output$downloadData <- downloadHandler(
-  #   filename = function() {
-  #     paste0('data-', Sys.Date(), '.csv')
-  #   },
-  #   content = function(file) {
-  #     write.csv(orders.extended.filtered(), file, row.names=FALSE)
-  #   }
-  # )
+  # Data and button on Data Tab-------------------------------------------
+
+ 
+  output$table <- DT::renderDataTable({cat2SalesByYear()[cases.total>=input$price.in[1],]},
+                                      rownames = F,
+                                      options = list(bFilter = FALSE,
+                                                     iDisplayLength = 10)
+  )
+
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste0('data-', Sys.Date(), '.csv')
+    },
+    content = function(file) {
+      write.csv(orders.extended.filtered(), file, row.names=FALSE)
+    }
+  )
   
   
 })
