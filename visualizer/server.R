@@ -1,4 +1,7 @@
 #orders.extended <- read.data() # helper.R function
+#
+#Notes: Include date range and information in plot title
+#
 
 orders.extended <- fread("West Coast Fatalities.csv")
 
