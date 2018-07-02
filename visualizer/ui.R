@@ -19,9 +19,10 @@ shinyUI(navbarPage(
                  h3("Customize Variables", align = h3.align),
                  h6("Make selections and watch the graphs and data update", align="top"),
                  uiOutput("yearSlider"),
-                 uiOutput("unitPriceSlider"),
+                 uiOutput("casesSlider"),
                  uiOutput("cat1Controls"),
                  uiOutput("cat2Controls"),
+                 uiOutput("stateControls"),
                  p(actionButton(inputId = "reset", 
                                 label = "Reset Fields", 
                                 icon = icon("refresh")
@@ -29,30 +30,60 @@ shinyUI(navbarPage(
     ),
     
     mainPanel(
+     
       tabsetPanel(
         
-        # Analysis Tab -----------------------------------------
+        
+        # Fatalities Tab -----------------------------------------
         tabPanel(
-          p(icon("area-chart"), "Analysis"),
+          p(icon("area-chart"), "Events by Year"),
+          # Detailed Information
+          h4(textOutput("textTitle2")),
+          showOutput("CasesbyYear",  "nvd3")),  # End Fatalities Tab
+        
+        #Fatal Events
+        tabPanel(
+          p(icon("area-chart"), "Fatal"),
+          h4(textOutput("textTitle1")),
+          showOutput("casestypeout",  "nvd3")),
+        
+        #Non-Fatal Events
+        tabPanel(
+          p(icon("area-chart"), "Non-Fatal"),
+          h4("Injury Sources"),
           
-          # Fatalities Over Time By Category
-         
-          fluidRow(
-            column(6, h4("View Incidents by Year"), 
-                   p(showOutput("primaryBikeCatOut", "nvd3"))),
+          showOutput("nf_source","nvd3"),
+          tags$hr(),
+          h4("Injury Events"),
+          showOutput("nf_event","nvd3")
           
-            column(6,h4("View Incidents by Year and Type"),
-                   p(showOutput("secondaryBikeCatOut", "nvd3")))
           ),
           
+        
+        #Map
+        tabPanel(
+          p(icon("area-chart"), "Event Map"),
+          #(textOutput("textTitle1")),
+          #showOutput("casestypeout",  "nvd3"),
+          leafletOutput("FatalbyLocation")
+          #p("Fatal Accidents over Time"),
+          #
+          
+          # Fatalities Over Time By Category
+          
+          
+          # fluidRow(
+          #   column(6, h4("View Incidents by Year"), 
+          #          p(showOutput("cases.year.out", "nvd3"))),
+          # 
+          #   column(6,h4("View Incidents by Year and Type"),
+          #          p(showOutput("secondaryBikeCatOut", "nvd3")))
+          # ),
+          
           # Detailed Information
-          fluidRow(h3("Aggregated Information")),
-          fluidRow(
-            column(6,
-                   
-                   
-                   showOutput("topNout", "nvd3"))
-          )),  # End Analysis Tab
+          #h4("All Fatalities by Year"),
+          #showOutput("CasesbyYear",  "nvd3")
+          ),
         
         # Data Tab ---------------------------------------------
         tabPanel(
