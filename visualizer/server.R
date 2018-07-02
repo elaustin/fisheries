@@ -409,7 +409,7 @@ shinyServer(function(input, output, session) {
     nf_eventDF$chart(showControls = F)
     nf_eventDF$chart(stacked = T)
     nf_eventDF$yAxis(axisLabel = textX)
-    nf_sourceDF$setTemplate(afterScript='<style> svg text {font-size: 9px;}</style>')
+    nf_eventDF$setTemplate(afterScript='<style> svg text {font-size: 9px;}</style>')
     nf_eventDF$chart(margin = list(left = 200))
     nf_eventDF
     
@@ -461,6 +461,8 @@ output$FatalbyLocation <- renderLeaflet({
                    input$year.in[1], "to",
                    input$year.in[2])
   
+  pal <- colorFactor(c("red","blue"), mapdata$Outcome)
+  
   
 
   leaflet(mapdata) %>%
@@ -470,7 +472,7 @@ output$FatalbyLocation <- renderLeaflet({
                        zoom=4) %>%
     addCircleMarkers(lng = ~Longitude,
                lat = ~Latitude,
-               color = ~pal(Outcome),
+               color = ~pal(mapdata$Outcome),
                radius = x,
                stroke=F
                ) %>%

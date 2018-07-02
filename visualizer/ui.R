@@ -83,22 +83,9 @@ shinyUI(navbarPage(
           # Detailed Information
           #h4("All Fatalities by Year"),
           #showOutput("CasesbyYear",  "nvd3")
-          ),
+          )
         
-        # Data Tab ---------------------------------------------
-        tabPanel(
-          p(icon("table"), "Data"),
-          
-          fluidRow(
-            column(6, h3("Search, Filter & Download Data", align='left')),
-            column(6, downloadButton('downloadData', 'Download', class="pull-right"))
-            
-          ),
-          hr(),
-          fluidRow(
-            dataTableOutput(outputId="table")
-            
-          )) # End Data Tab
+     # End Data Tab
       )
     )
   ), # End Analytics Tab Panel
@@ -107,7 +94,25 @@ shinyUI(navbarPage(
   tabPanel("Supporting Docs",
            mainPanel(column(8, offset = 2, includeMarkdown("about.md"))
            )
-  ) # End About Tab Panel
+  ), # End About Tab Panel
+  
+  # Data Tab ---------------------------------------------
+  tabPanel("Data",
+           tabsetPanel(
+  tabPanel(
+    p(icon("table"), "Fatalities Data"),
+    
+    fluidRow(
+      column(6, h3("Search, Filter & Download Data", align='left')),
+      column(6, downloadButton('downloadData', 'Download', class="pull-right"))
+      
+    ),
+    hr(),
+    fluidRow(
+      dataTableOutput(outputId="table")
+      
+    ))
+  ))
   
 ) # End navbarPage
 ) # End shinyUI
