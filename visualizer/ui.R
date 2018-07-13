@@ -16,13 +16,32 @@ shinyUI(navbarPage(
     
     # 
     sidebarPanel(width=3,
-                 h3("Customize Variables", align = h3.align),
-                 h6("Make selections and watch the graphs and data update", align="top"),
+                 h6("Select variables and watch the graphs and data update", align="top"),
                  uiOutput("yearSlider"),
                  uiOutput("casesSlider"),
                  uiOutput("cat1Controls"),
-                 uiOutput("cat2Controls"),
-                 uiOutput("stateControls"),
+                 radioButtons(
+                   inputId="cat2radio",
+                   label="Injury Type Selection:",
+                   choices=list(
+                     "All",
+                     "Select"
+                   ), inline=T, selected="All"),
+                   conditionalPanel(
+                     condition = "input.cat2radio != 'All'",
+                     uiOutput("cat2Controls")),
+                 radioButtons(
+                   inputId="radio",
+                   label="State Selection:",
+                   choices=list(
+                     "All",
+                     "Select"
+                   ),
+                   selected="All", inline = T),
+                 conditionalPanel(
+                   condition = "input.radio != 'All'",
+                   uiOutput("stateControls")),
+                 
                  p(actionButton(inputId = "reset", 
                                 label = "Reset Fields", 
                                 icon = icon("refresh")
@@ -39,7 +58,8 @@ shinyUI(navbarPage(
           p(icon("area-chart"), "Events by Year"),
           # Detailed Information
           h4(textOutput("textTitle2")),
-          showOutput("CasesbyYear",  "nvd3")),  # End Fatalities Tab
+          showOutput("CasesbyYear",  "nvd3"),
+          showOutput("CasesbyYearAll",  "nvd3")),  # End Fatalities Tab
         
         #Fatal Events
         tabPanel(
@@ -99,17 +119,21 @@ shinyUI(navbarPage(
   # Data Tab ---------------------------------------------
   tabPanel("Data",
            tabsetPanel(
+             
+             tabPanel(
+               p(icon("table"), "Fatalities"),
+               
+               fluidRow(
+                 dataTableOutput(outputId="table", width = "90%")
+                 
+               )),
+             
+  
   tabPanel(
-    p(icon("table"), "Fatalities Data"),
+    p(icon("table"), "Non-Fatal Source"),
     
     fluidRow(
-      column(6, h3("Search, Filter & Download Data", align='left')),
-      column(6, downloadButton('downloadData', 'Download', class="pull-right"))
-      
-    ),
-    hr(),
-    fluidRow(
-      dataTableOutput(outputId="table")
+      dataTableOutput(outputId="nf_source_table")
       
     ))
   ))
