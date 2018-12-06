@@ -1,44 +1,18 @@
-
-#Import Data
-west_coast_fatal <- fread("west_coast_fatal_state.csv")
-west_coast_fatal[, Outcome := "Fatal"]
-setnames(west_coast_fatal, "Incident Type", "Type")
-west_coast_fatal[, Cases := as.numeric(as.character(Fatalities))]
-
-#add non-fatal
-west_coast_nonfatal <- fread("west_coast_non_fatal_state.csv")
-
-#merge fatal and nonfatal by State
-fatal_state = west_coast_fatal[, list(`Fatalities` =
-                                 sum(Fatalities)), by=c("Year","State","Type")]
-setkey(fatal_state, Year, State)
-setkey(west_coast_nonfatal, Year, State)
-
-merge_state = merge(fatal_state, west_coast_nonfatal, all=T)
-
-setnames(merge_state, "Fatalities", "Fatal")
-setnames(merge_state, "Nonfatal Injuries", "Non-Fatal")
-
-merge_state_melt = melt(merge_state,
-                        measure.vars = c("Fatal","Non-Fatal"),
-     value.name = "Cases", variable.name = "Outcome")
-
-merge_state_melt = merge_state_melt[!is.na(Cases),]
-
-non_fatal_source = fread("west_coast_non_fatal_source.csv")
-non_fatal_event = fread("west_coast_non_fatal_event.csv")
-
+#encrypting data
+# x <- serialize(list(1,2,3), NULL)
 # 
-# # Setup inputs
-cat1 <- sort(unique(merge_state_melt$Outcome))
-cat2 <- c(sort(unique(west_coast_fatal$`Type`)))
-stateCat <- c(sort(unique(c(west_coast_fatal$State,merge_state_melt$State) )))
-yearMax <- max(west_coast_fatal$Year)
-yearMin <- min(west_coast_fatal$Year)
-fatalitiesMin <- min(west_coast_fatal$Fatalities)
-fatalitiesMax <- max(west_coast_fatal$Fatalities)
-nonfatalMin <- min(merge_state_melt$`Cases`, na.rm=T)
-nonfatalMax <- max(merge_state_melt$`Cases`, na.rm=T)
+# passphrase <- charToRaw("This is super secret")
+# key <- sha256(passphrase)
+# 
+# encrypted_x <- aes_cbc_encrypt(x, key = key)
+# 
+# saveRDS(encrypted_x, "secret-x.rds")
+# 
+# encrypted_y <- readRDS("secret-x.rds")
+# 
+# y <- unserialize(aes_cbc_decrypt(encrypted_y, key = key))
+
+
 
 # 
 # typesList <- cat2
@@ -47,10 +21,63 @@ nonfatalMax <- max(merge_state_melt$`Cases`, na.rm=T)
 shinyServer(function(input, output, session) {
 
   # Setup reactive inputs ------------------------------------------------
-
+  observeEvent(input$goButton, {
+    
+    
+    if(!is.null(input$key)){
+      
+      keyval = sha256(charToRaw(input$key))
+  
+      #Import Data
+      west_coast_fatal <- readRDS("west_coast_fatal_state.rds")
+      west_coast_fatal <- data.table(unserialize(aes_cbc_decrypt(west_coast_fatal, key = keyval)))
+      
+      west_coast_fatal[, Outcome := "Fatal"]
+      setnames(west_coast_fatal, "Incident Type", "Type")
+      west_coast_fatal[, Cases := as.numeric(as.character(Fatalities))]
+      
+      #add non-fatal
+      west_coast_nonfatal <- readRDS("west_coast_non_fatal_state.rds")
+      west_coast_nonfatal <- data.table(unserialize(aes_cbc_decrypt(west_coast_nonfatal, key = keyval)))
+      
+      #merge fatal and nonfatal by State
+      fatal_state = west_coast_fatal[, list(`Fatalities` =
+                                              sum(Fatalities)), by=c("Year","State","Type")]
+      setkey(fatal_state, Year, State)
+      setkey(west_coast_nonfatal, Year, State)
+      
+      merge_state = merge(fatal_state, west_coast_nonfatal, all=T)
+      
+      setnames(merge_state, "Fatalities", "Fatal")
+      setnames(merge_state, "Nonfatal Injuries", "Non-Fatal")
+      
+      merge_state_melt = melt(merge_state,
+                              measure.vars = c("Fatal","Non-Fatal"),
+                              value.name = "Cases", variable.name = "Outcome")
+      
+      merge_state_melt = merge_state_melt[!is.na(Cases),]
+      
+      non_fatal_source = readRDS("west_coast_non_fatal_source.rds")
+      non_fatal_source <- data.table(unserialize(aes_cbc_decrypt(non_fatal_source, key = keyval)))
+      
+      non_fatal_event = readRDS("west_coast_non_fatal_event.rds")
+      non_fatal_event <- data.table(unserialize(aes_cbc_decrypt(non_fatal_event, key = keyval)))
+      
+      # 
+      # # Setup inputs
+      cat1 <- sort(unique(merge_state_melt$Outcome))
+      cat2 <- c(sort(unique(west_coast_fatal$`Type`)))
+      stateCat <- c(sort(unique(c(west_coast_fatal$State,merge_state_melt$State) )))
+      yearMax <- max(west_coast_fatal$Year)
+      yearMin <- min(west_coast_fatal$Year)
+      fatalitiesMin <- min(west_coast_fatal$Fatalities)
+      fatalitiesMax <- max(west_coast_fatal$Fatalities)
+      nonfatalMin <- min(merge_state_melt$`Cases`, na.rm=T)
+      nonfatalMax <- max(merge_state_melt$`Cases`, na.rm=T)
+      
   output$yearSlider <- renderUI({
     sliderInput(inputId = "year.in",
-                label   = "Time Range",
+                label   = "Year Filter",
                 min     = yearMin,
                 max     = yearMax,
                 step    = 1,
@@ -62,10 +89,10 @@ shinyServer(function(input, output, session) {
    output$casesSlider <- renderUI({
     sliderInput(inputId = "cases.in",
                 label   = "Minimum Cases",
-                min     = min(fatalitiesMin , nonfatalMin),
+                min     = 5,
                 max     = max(fatalitiesMax , nonfatalMax),
                 step    = 1,
-                value   = 1,
+                value   = 0,
                 ticks   = T,
                 sep     = "")
   })
@@ -78,12 +105,12 @@ shinyServer(function(input, output, session) {
 
 
   output$cat2Controls <- renderUI({
-    checkboxGroupInput('cat2', label = "",
+    checkboxGroupInput('cat2', label = "Injury Type",
                        choices = cat2, selected = cat2)
   })
 
   output$stateControls <- renderUI({
-    checkboxGroupInput('state.in', label = "",
+    checkboxGroupInput('state.in', label = "State",
                        choices = stateCat, selected = stateCat)
   })
 
@@ -95,9 +122,14 @@ shinyServer(function(input, output, session) {
                                                      max(fatalitiesMax, nonfatalMax)))
       updateCheckboxGroupInput(session, "state.in", choices = stateCat, selected = stateCat)
       updateSliderInput(session, "year.in", val = c(yearMin, yearMax))
+   
+  
     }
-
+  
   })
+    }
+    
+})
   
 
 
@@ -207,7 +239,7 @@ shinyServer(function(input, output, session) {
     temp = temp[, list(casestotal = sum(casestotal)),
                   by=c("State","Type")]
     
-    temp = temp[casestotal < input$cases.in[1] & casestotal > 0, casestotal := input$cases.in[1]/2]
+    temp[casestotal<input$cases.in[1] & casestotal>0, casestotal := 2.5]
     
     setkey(temp, "Type", "State")
     
@@ -242,6 +274,8 @@ shinyServer(function(input, output, session) {
       temp = temp[, list(casestotal = sum(casestotal)),
                   by=c("Year","State")]
       
+      temp[casestotal<input$cases.in[1] & casestotal>0, casestotal := 2.5]
+      
       setkey(temp, Year)
       temp
     }
@@ -274,9 +308,6 @@ shinyServer(function(input, output, session) {
       
       temp = temp[, list(Cases = sum(casestotal)),
                   by=c("Year","State","Outcome")]
-      
-      temp = temp[Cases < input$cases.in[1] & Cases > 0, 
-                  Cases := input$cases.in[1]/2]
       
       setkey(temp, Year)
       temp
@@ -319,30 +350,21 @@ shinyServer(function(input, output, session) {
   output$casestypeout <- renderChart({
     # Error handling
     if (is.null(west_coast_fatal.filtered())) return(rCharts$new())
-    
-    datachart = fatalitiesByType()
 
     casesyearoutDF <- nPlot(
       casestotal ~ State,
       group =  "Type",
-      data = datachart,
+      data = fatalitiesByType(),
       type = "multiBarHorizontalChart",
       dom = "casestypeout",
-      tooltip = "Tip",
       width=800
     )
-    
+
     casesyearoutDF$chart(margin = list(left = 85))
     casesyearoutDF$yAxis(axisLabel = "Cases", width = 100)
     casesyearoutDF$xAxis(axisLabel = "", width = 70)
-    casesyearoutDF$chart(showControls = T)
-    casesyearoutDF$chart(tooltipContent = "#! function(Type, x, y){
-  return x + ': ' + y + ' ' + Type + ' Cases'
-  } !#")
-    
-    
-    
-    casesyearoutDF$chart(stacked = T)
+    casesyearoutDF$chart(showControls = FALSE)
+    # casesyearoutDF$chart(stacked = T)
     # casesyearoutDF$set(dom = "casesyearout")
     # casesyearoutDF$show('iframesrc', cdn = FALSE)
 
@@ -352,16 +374,11 @@ shinyServer(function(input, output, session) {
   output$CasesbyYear <- renderChart({
     # Error handling
     if (is.null(merge_state_melt.filtered())) return(rCharts$new())
-    
-    dataDF = numbersBystate()
-    
-    dataDF =  dataDF[casestotal < input$cases.in[1] & casestotal > 0, 
-                         casestotal := input$cases.in[1]/2]
 
     CasesbyYearDF <- nPlot(
       casestotal ~ Year ,
       group = "State",
-      data = dataDF,
+      data = numbersBystate(),
       type = "lineChart",
       dom = "CasesbyYear",
       width= 800
@@ -372,41 +389,8 @@ shinyServer(function(input, output, session) {
     CasesbyYearDF$yAxis(axisLabel = "Cases", width = 100)
     #CasesbyYearDF$xAxis(axisLabel = "Year", width = 80)
     #CasesbyYearDF$chart(stacked = T)
-    CasesbyYearDF$chart(tooltipContent = "#! function(State, x, y){
-  return State + ': ' + y + ' ' + ' Cases'
-  } !#")
-    
     CasesbyYearDF
   })
-  
-  output$CasesbyYearAll <- renderChart({
-    # Error handling
-    if (is.null(numbersBystate())) return(rCharts$new())
-    dataDF = numbersBystate()[, list(`All Cases` = sum(casestotal)), by="Year"]
-    
-    dataDF =  dataDF[`All Cases` < input$cases.in[1] & `All Cases` > 0, 
-                     `All Cases` := input$cases.in[1]/2]
-      
-    CasesbyYearDF <- nPlot(
-      `All Cases` ~ Year ,
-      #group = "State",
-      data = dataDF,
-      type = "lineChart",
-      dom = "CasesbyYearAll",
-      width= 800
-      
-    )
-    
-    CasesbyYearDF$chart(margin = list(left = 85))
-    CasesbyYearDF$yAxis(axisLabel = "Cases", width = 100)
-    #CasesbyYearDF$xAxis(axisLabel = "Year", width = 80)
-    #CasesbyYearDF$chart(stacked = T)
-    CasesbyYearDF$chart(tooltipContent = "#! function(State, x, y){
-                        return State + ': ' + y + ' ' + ' Cases'
-  } !#")
-    
-    CasesbyYearDF
-})
   
   output$nf_source <- renderChart({
     
@@ -417,11 +401,15 @@ shinyServer(function(input, output, session) {
                     input$year.in[1], "to",
                     input$year.in[2])
     
+    dataval = non_fatal_source.filtered()[,sum(`Nonfatal Injuries`),by=Source]
+    dataval[V1<input$cases.in[1] & V1>0, V1 := 2]
+    setorder(dataval, -V1)
+    
     nf_sourceDF <- nPlot(
-      y = "V1", 
-      x = "Source",
+      x = "Source" ,
+      y = "V1",
       group = "Source",
-      data = non_fatal_source.filtered()[,sum(`Nonfatal Injuries`),by=Source],
+      data = dataval,
       type = "multiBarHorizontalChart",
       dom = "nf_source",
       width= 800
@@ -433,9 +421,10 @@ shinyServer(function(input, output, session) {
     nf_sourceDF$yAxis(axisLabel = textX)
     nf_sourceDF$setTemplate(afterScript='<style> svg text {font-size: 9px;}</style>')
     nf_sourceDF$chart(margin = list(left = 200))
-    nf_sourceDF$chart(tooltipContent = "#! function(y, x, e){
-  return y + ' ' + e
+    nf_sourceDF$chart(tooltipContent = "#! function(Source, x, y){ var idx = x.replace('2','5')
+  return Source + ' ' + y
   } !#")
+    
     nf_sourceDF
     
   }
@@ -450,11 +439,14 @@ shinyServer(function(input, output, session) {
                   input$year.in[1], "to",
                   input$year.in[2])
     
+    dataval = non_fatal_event.filtered()[,sum(`Nonfatal Injuries`),by=Event]
+    setorder(dataval, -V1)
+    
     nf_eventDF <- nPlot(
       x = "Event" ,
       y = "V1",
       group = "Event",
-      data = non_fatal_event.filtered()[,sum(`Nonfatal Injuries`),by=Event],
+      data =dataval ,
       type = "multiBarHorizontalChart",
       dom = "nf_event",
       width= 800
@@ -466,9 +458,6 @@ shinyServer(function(input, output, session) {
     nf_eventDF$yAxis(axisLabel = textX)
     nf_eventDF$setTemplate(afterScript='<style> svg text {font-size: 9px;}</style>')
     nf_eventDF$chart(margin = list(left = 200))
-    nf_eventDF$chart(tooltipContent = "#! function(y, x, e){
-  return y + ' ' + e
-  } !#")
     nf_eventDF
     
   }
@@ -482,10 +471,10 @@ output$FatalbyLocation <- renderLeaflet({
   if(is.null(input$cat1)) return(NULL)
   mapdata = numbersBystateMap()
   # mapdata = merge_state_melt
-  unkown.gps = c( -140, 53)
+  unkown.gps = c( -135, 53)
   california.gps = c( -127, 39.093265)
-  oregon.gps = c(-127, 44.4)
-  washington.gps = c(-127, 47.6)
+  oregon.gps = c(-127, 45.496367)
+  washington.gps = c(-127, 47.951875)
   mapdatalocations = data.table(State = c("California", "Oregon", 
                                           "Washington","Unknown/transit"),
                                 Longitude  = c(california.gps[1],
@@ -501,7 +490,7 @@ output$FatalbyLocation <- renderLeaflet({
   setkey(mapdata, State)
   setkey(mapdatalocations, State)
   mapdata = mapdatalocations[mapdata]
-  mapdata[Outcome == "Fatal", Longitude := Longitude - 4]
+  mapdata[Outcome == "Fatal", Longitude := Longitude - 3]
   
   x = mapdata$cases
   x = (scale(x,center=min(x),scale=diff(range(x)))+.2)*20
@@ -519,12 +508,12 @@ output$FatalbyLocation <- renderLeaflet({
                    input$year.in[1], "to",
                    input$year.in[2])
   
-  pal <- colorFactor(c("red","midnightblue"), mapdata$Outcome)
+  pal <- colorFactor(c("red","blue"), mapdata$Outcome)
   
   
 
   leaflet(mapdata) %>%
-    addProviderTiles("OpenStreetMap.Mapnik") %>%
+    addProviderTiles("CartoDB.Positron") %>%
     setView(lng = mean(mapdatalocations$Longitude),
                        lat = mean(mapdatalocations$Latitude),
                        zoom=4) %>%
@@ -630,28 +619,11 @@ output$FatalbyLocation <- renderLeaflet({
 #   # Data and button on Data Tab-------------------------------------------
 # 
 #  
-  output$table <- DT::renderDataTable({
-    dataDT = west_coast_fatal.filtered()
-    dataDT[, Fatalities := as.character(Fatalities)]
-    dataDT[Cases < input$cases.in[1] & Cases > 0, Fatalities := paste0("<", 
-                                                         input$cases.in[1])]
-    setorder(dataDT, -Cases)
-    dataDT$Cases = NULL
-    dataDT
-    
-    },rownames = F  )
-
-output$nf_source_table <- DT::renderDataTable({
-  dataDT =  non_fatal_source.filtered ()
-  dataDT[, Cases := `Nonfatal Injuries`]
-  dataDT[, `Nonfatal Injuries` := as.character(`Nonfatal Injuries`)]
-  dataDT[Cases < input$cases.in[1] & Cases > 0, `Nonfatal Injuries` := paste0("<", 
-                                                                              input$cases.in[1])]
-  setorder(dataDT, -Cases)
-  dataDT$Cases = NULL
-  dataDT
-  
-},rownames = F  )
+  output$table <- DT::renderDataTable({cat1SalesByYear()[casestotal>=input$cases.in[1],]},
+                                      rownames = F,
+                                      options = list(bFilter = FALSE,
+                                                     iDisplayLength = 10)
+  )
 
   output$downloadData <- downloadHandler(
     filename = function() {

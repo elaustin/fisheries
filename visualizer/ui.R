@@ -12,36 +12,21 @@ shinyUI(navbarPage(
   
   # Analytics tab panel --------------------------------------------------        
   tabPanel(
+    title = "Password",
+    textInput("key", "Please type your password:"),
+    actionButton("goButton", "Submit Password")),
+  tabPanel(
     title = "Analytics",
     
     # 
     sidebarPanel(width=3,
-                 h6("Select variables and watch the graphs and data update", align="top"),
+                 h3("Customize Variables", align = h3.align),
+                 h6("Make selections and watch the graphs and data update", align="top"),
                  uiOutput("yearSlider"),
                  uiOutput("casesSlider"),
                  uiOutput("cat1Controls"),
-                 radioButtons(
-                   inputId="cat2radio",
-                   label="Injury Type Selection:",
-                   choices=list(
-                     "All",
-                     "Select"
-                   ), inline=T, selected="All"),
-                   conditionalPanel(
-                     condition = "input.cat2radio != 'All'",
-                     uiOutput("cat2Controls")),
-                 radioButtons(
-                   inputId="radio",
-                   label="State Selection:",
-                   choices=list(
-                     "All",
-                     "Select"
-                   ),
-                   selected="All", inline = T),
-                 conditionalPanel(
-                   condition = "input.radio != 'All'",
-                   uiOutput("stateControls")),
-                 
+                 uiOutput("cat2Controls"),
+                 uiOutput("stateControls"),
                  p(actionButton(inputId = "reset", 
                                 label = "Reset Fields", 
                                 icon = icon("refresh")
@@ -58,8 +43,7 @@ shinyUI(navbarPage(
           p(icon("area-chart"), "Events by Year"),
           # Detailed Information
           h4(textOutput("textTitle2")),
-          showOutput("CasesbyYear",  "nvd3"),
-          showOutput("CasesbyYearAll",  "nvd3")),  # End Fatalities Tab
+          showOutput("CasesbyYear",  "nvd3")),  # End Fatalities Tab
         
         #Fatal Events
         tabPanel(
@@ -119,21 +103,17 @@ shinyUI(navbarPage(
   # Data Tab ---------------------------------------------
   tabPanel("Data",
            tabsetPanel(
-             
-             tabPanel(
-               p(icon("table"), "Fatalities"),
-               
-               fluidRow(
-                 dataTableOutput(outputId="table", width = "90%")
-                 
-               )),
-             
-  
   tabPanel(
-    p(icon("table"), "Non-Fatal Source"),
+    p(icon("table"), "Fatalities Data"),
     
     fluidRow(
-      dataTableOutput(outputId="nf_source_table")
+      column(6, h3("Search, Filter & Download Data", align='left')),
+      column(6, downloadButton('downloadData', 'Download', class="pull-right"))
+      
+    ),
+    hr(),
+    fluidRow(
+      dataTableOutput(outputId="table")
       
     ))
   ))
