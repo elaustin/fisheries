@@ -2,8 +2,8 @@
 library(pacman)
 
 p_load("shiny","dplyr","lubridate","scales",
-       "DT","leaflet","devtools", "yaml",
-       "data.table","shinythemes","remotes","openssl")
+       "leaflet","devtools", "yaml",
+       "data.table","shinythemes","openssl")
 
 library(rCharts)
 

@@ -1,18 +1,3 @@
-#encrypting data
-# x <- serialize(list(1,2,3), NULL)
-# 
-# passphrase <- charToRaw("This is super secret")
-# key <- sha256(passphrase)
-# 
-# encrypted_x <- aes_cbc_encrypt(x, key = key)
-# 
-# saveRDS(encrypted_x, "secret-x.rds")
-# 
-# encrypted_y <- readRDS("secret-x.rds")
-# 
-# y <- unserialize(aes_cbc_decrypt(encrypted_y, key = key))
-
-
 
 # 
 # typesList <- cat2
@@ -22,6 +7,7 @@ shinyServer(function(input, output, session) {
 
   # Setup reactive inputs ------------------------------------------------
   observeEvent(input$goButton, {
+    
     
     
     if(!is.null(input$key)){

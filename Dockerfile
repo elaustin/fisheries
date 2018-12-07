@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     libssl1.0.0
 
 # basic shiny functionality
-RUN R -e "install.packages(c('shiny', 'rmarkdown'), repos='https://cloud.r-project.org/')"
+RUN R -e "install.packages(c('shiny', 'rmarkdown', 'pacman'), repos='https://cloud.r-project.org/')"
 
 # install dependencies of the SYVisualization app
 RUN R -e "install.packages(c('dplyr', 'lubridate', 'scales', 'DT', 'leaflet', 'devtools', 'yaml','data.table', 'shinythemes', 'remotes', 'openssl'), repos='https://cloud.r-project.org/')"

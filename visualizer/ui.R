@@ -1,4 +1,21 @@
-
+#Allowing the "enter" key to work on the app
+jscode <- '
+$(function() {
+  var $els = $("[data-proxy-click]");
+  $.each(
+    $els,
+    function(idx, el) {
+      var $el = $(el);
+      var $proxy = $("#" + $el.data("proxyClick"));
+      $el.keydown(function (e) {
+        if (e.keyCode == 13) {
+          $proxy.click();
+        }
+      });
+    }
+  );
+});
+'
 
 # Adjustments
 h3.align <- 'center'
@@ -12,12 +29,19 @@ shinyUI(navbarPage(
   
   # Analytics tab panel --------------------------------------------------        
   tabPanel(
+    tags$head(tags$script(HTML(jscode))),
     title = "Password",
-    textInput("key", "Please type your password:"),
-    actionButton("goButton", "Submit Password")),
+    tagAppendAttributes(
+      textInput("key", "Please type your password", ""),
+      `data-proxy-click` = "goButton"),
+    actionButton("goButton", "Submit Password"),
+    br(),
+    hr(),
+    "Once you have entered your password, select one of the other tabs.",
+    br(),
+    "If you enter the incorrect password, please refresh this page."),
   tabPanel(
     title = "Analytics",
-    
     # 
     sidebarPanel(width=3,
                  h3("Customize Variables", align = h3.align),
