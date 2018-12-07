@@ -1,11 +1,8 @@
 # Load libraries ---------------------------------------------------------------
-library(pacman)
-
-p_load("shiny","dplyr","lubridate","scales",
-       "leaflet","devtools", "yaml",
-       "data.table","shinythemes","openssl")
-
-library(rCharts)
+Packages <- c("shiny","dplyr","lubridate","scales",
+              "DT","leaflet","devtools", "yaml",
+              "data.table","shinythemes","remotes","openssl", "rCharts")
+lapply(Packages, library, character.only = TRUE)
 
 # Helper has server-side functions to read and manipulate data -----------------
 source("./scripts/helper.R", local=T) 
