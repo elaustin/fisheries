@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Welcome to the Fisheries Dashboard
 ---
 

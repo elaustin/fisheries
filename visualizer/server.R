@@ -29,16 +29,16 @@ shinyServer(function(input, output, session) {
       keyval = sha256(charToRaw(input$key))
   
       #Import Data
-      west_coast_fatal <- readRDS("west_coast_fatal_state.rds")
-      west_coast_fatal <- data.table(unserialize(aes_cbc_decrypt(west_coast_fatal, key = keyval)))
+      #west_coast_fatal <- readRDS("west_coast_fatal_state.rds")
+      west_coast_fatal <<- data.table(unserialize(aes_cbc_decrypt(west_coast_fatal, key = keyval)))
       
       west_coast_fatal[, Outcome := "Fatal"]
       setnames(west_coast_fatal, "Incident Type", "Type")
       west_coast_fatal[, Cases := as.numeric(as.character(Fatalities))]
       
       #add non-fatal
-      west_coast_nonfatal <- readRDS("west_coast_non_fatal_state.rds")
-      west_coast_nonfatal <- data.table(unserialize(aes_cbc_decrypt(west_coast_nonfatal, key = keyval)))
+      #west_coast_nonfatal <- readRDS("fisheries_vis//visualizer//west_coast_non_fatal_state.rds")
+      west_coast_nonfatal <<- data.table(unserialize(aes_cbc_decrypt(west_coast_nonfatal, key = keyval)))
       
       #merge fatal and nonfatal by State
       fatal_state = west_coast_fatal[, list(`Fatalities` =
@@ -51,17 +51,17 @@ shinyServer(function(input, output, session) {
       setnames(merge_state, "Fatalities", "Fatal")
       setnames(merge_state, "Nonfatal Injuries", "Non-Fatal")
       
-      merge_state_melt = melt(merge_state,
+      merge_state_melt <<- melt(merge_state,
                               measure.vars = c("Fatal","Non-Fatal"),
                               value.name = "Cases", variable.name = "Outcome")
       
-      merge_state_melt = merge_state_melt[!is.na(Cases),]
+      merge_state_melt <<- merge_state_melt[!is.na(Cases),]
       
-      non_fatal_source = readRDS("west_coast_non_fatal_source.rds")
-      non_fatal_source <- data.table(unserialize(aes_cbc_decrypt(non_fatal_source, key = keyval)))
+      #non_fatal_source = readRDS("fisheries_vis//visualizer//west_coast_non_fatal_source.rds")
+      non_fatal_source <<- data.table(unserialize(aes_cbc_decrypt(non_fatal_source, key = keyval)))
       
-      non_fatal_event = readRDS("west_coast_non_fatal_event.rds")
-      non_fatal_event <- data.table(unserialize(aes_cbc_decrypt(non_fatal_event, key = keyval)))
+      #non_fatal_event = readRDS("fisheries_vis//visualizer//west_coast_non_fatal_event.rds")
+      non_fatal_event <<- data.table(unserialize(aes_cbc_decrypt(non_fatal_event, key = keyval)))
       
       # 
       # # Setup inputs
@@ -130,8 +130,6 @@ shinyServer(function(input, output, session) {
     }
     
 })
-  
-
 
 
   # Data Reactivity ------------------------------------------------------
