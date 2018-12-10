@@ -1,4 +1,4 @@
-FROM openanalytics/r-base
+FROM r-base
 
 MAINTAINER Elena Austin "elaustin@github.com"
 
@@ -11,8 +11,7 @@ RUN apt-get update && apt-get install -y \
     libcairo2-dev \
     libxt-dev \
     libssl-dev \
-    libssh2-1-dev \
-    libssl1.0.0
+    libssh2-1-dev 
 
 # basic shiny functionality
 RUN R -e "install.packages('devtools', repos='https://cloud.r-project.org/')"

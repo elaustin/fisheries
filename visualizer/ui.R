@@ -37,9 +37,12 @@ shinyUI(navbarPage(
     actionButton("goButton", "Submit Password"),
     br(),
     hr(),
-    "Once you have entered your password, select one of the other tabs.",
+    "After entering your password select one of the other tabs (ex. Analytics).",
     br(),
-    "If you enter the incorrect password, please refresh this page."),
+    "If you enter the incorrect password, please refresh this page.",
+    br(),
+    h5(a("Please provide feedback via this form.", 
+         href = "https://goo.gl/forms/FG3e8sXOI6X6DFhb2"))),
   tabPanel(
     title = "Analytics",
     # 

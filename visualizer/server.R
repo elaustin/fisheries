@@ -6,9 +6,7 @@
 shinyServer(function(input, output, session) {
 
   # Setup reactive inputs ------------------------------------------------
-  observeEvent(input$goButton, {
-    
-    
+  observeEvent(input$goButton,once = TRUE, {
     
     if(!is.null(input$key)){
       
@@ -49,6 +47,7 @@ shinyServer(function(input, output, session) {
       #non_fatal_event = readRDS("fisheries_vis//visualizer//west_coast_non_fatal_event.rds")
       non_fatal_event <<- data.table(unserialize(aes_cbc_decrypt(non_fatal_event, key = keyval)))
       
+      
       # 
       # # Setup inputs
       cat1 <- sort(unique(merge_state_melt$Outcome))
@@ -60,6 +59,7 @@ shinyServer(function(input, output, session) {
       fatalitiesMax <- max(west_coast_fatal$Fatalities)
       nonfatalMin <- min(merge_state_melt$`Cases`, na.rm=T)
       nonfatalMax <- max(merge_state_melt$`Cases`, na.rm=T)
+
       
   output$yearSlider <- renderUI({
     sliderInput(inputId = "year.in",
@@ -115,7 +115,8 @@ shinyServer(function(input, output, session) {
   })
     }
     
-})
+  })
+
 
 
   # Data Reactivity ------------------------------------------------------
@@ -310,8 +311,10 @@ shinyServer(function(input, output, session) {
   })
 
   # Plots on Analysis Tab ------------------------------------------------
-
-  output$textTitle1 =renderText(paste(ifelse(is.na(input$cat1[2]),
+ 
+   
+ 
+   output$textTitle1 =renderText(paste(ifelse(is.na(input$cat1[2]),
                                              input$cat1[1], 
                                              input$cat1[1]),
                                              #paste(input$cat1[1], " and ", 
@@ -617,6 +620,7 @@ output$FatalbyLocation <- renderLeaflet({
       write.csv(west_coast_fatal.filtered(), file, row.names=FALSE)
     }
   )
+  
 #   
 #   
  })
