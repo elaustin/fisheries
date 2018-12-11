@@ -19,7 +19,7 @@ RUN R -e "install.packages('shiny', repos='https://cloud.r-project.org/')"
 RUN R -e "install.packages(c('rmarkdown'), repos='https://cloud.r-project.org/')"
 
 # install dependencies of the SYVisualization app
-RUN R -e "install.packages(c('dplyr', 'lubridate', 'scales', 'DT', 'leaflet', 'devtools', 'yaml','data.table', 'shinythemes', 'remotes', 'openssl'), repos='https://cloud.r-project.org/', type = "binary")"
+RUN R -e "install.packages(c('dplyr', 'lubridate', 'scales', 'DT', 'leaflet', 'devtools', 'yaml','data.table', 'shinythemes', 'remotes', 'openssl'), repos='https://cloud.r-project.org/')"
 
 RUN R -e "devtools::install_github('ramnathv/rCharts')"
 
