@@ -5,21 +5,21 @@ MAINTAINER Elena Austin "elaustin@github.com"
 # system libraries of general use
 RUN apt-get update && apt-get install -y \
     sudo \
+    gdebi-core \
     pandoc \
     pandoc-citeproc \
     libcurl4-gnutls-dev \
-    libcairo2-dev \
+    libcairo2-dev/unstable \
     libxt-dev \
-    libssl-dev \
-    libssh2-1-dev 
+    libssl-dev
 
 # basic shiny functionality
 RUN R -e "install.packages('devtools', repos='https://cloud.r-project.org/')"
-RUN R -e "devtools::install_github('rstudio/shiny')"
+RUN R -e "install.packages('shiny', repos='https://cloud.r-project.org/')"
 RUN R -e "install.packages(c('rmarkdown'), repos='https://cloud.r-project.org/')"
 
 # install dependencies of the SYVisualization app
-RUN R -e "install.packages(c('dplyr', 'lubridate', 'scales', 'DT', 'leaflet', 'devtools', 'yaml','data.table', 'shinythemes', 'remotes', 'openssl'), repos='https://cloud.r-project.org/')"
+RUN R -e "install.packages(c('dplyr', 'lubridate', 'scales', 'DT', 'leaflet', 'devtools', 'yaml','data.table', 'shinythemes', 'remotes', 'openssl'), repos='https://cloud.r-project.org/', type = "binary")"
 
 RUN R -e "devtools::install_github('ramnathv/rCharts')"
 
