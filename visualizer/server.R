@@ -75,7 +75,7 @@ shinyServer(function(input, output, session) {
    output$casesSlider <- renderUI({
     sliderInput(inputId = "cases.in",
                 label   = "Minimum Cases",
-                min     = 5,
+                min     = 1,
                 max     = max(fatalitiesMax , nonfatalMax),
                 step    = 1,
                 value   = 0,
@@ -391,9 +391,10 @@ shinyServer(function(input, output, session) {
     dataval = non_fatal_source.filtered()[,sum(`Nonfatal Injuries`),by=Source]
     dataval[V1<input$cases.in[1] & V1>0, V1 := 2]
     setorder(dataval, -V1)
+    dataval$Type = "Non-Fatal Sources"
     
     nf_sourceDF <- nPlot(
-      x = "Source" ,
+      x = "Type" ,
       y = "V1",
       group = "Source",
       data = dataval,
@@ -403,7 +404,7 @@ shinyServer(function(input, output, session) {
       
     )
     #nf_sourceDF$chart(donut = TRUE)
-    nf_sourceDF$chart(showControls = F)
+    nf_sourceDF$chart(showControls =T) 
     nf_sourceDF$chart(stacked = T)
     nf_sourceDF$yAxis(axisLabel = textX)
     nf_sourceDF$setTemplate(afterScript='<style> svg text {font-size: 9px;}</style>')
@@ -428,9 +429,10 @@ shinyServer(function(input, output, session) {
     
     dataval = non_fatal_event.filtered()[,sum(`Nonfatal Injuries`),by=Event]
     setorder(dataval, -V1)
+    dataval$Type = "Non-Fatal Events"
     
     nf_eventDF <- nPlot(
-      x = "Event" ,
+      x = "Type" ,
       y = "V1",
       group = "Event",
       data =dataval ,
@@ -440,7 +442,7 @@ shinyServer(function(input, output, session) {
       
     )
     
-    nf_eventDF$chart(showControls = F)
+    nf_eventDF$chart(showControls = T)
     nf_eventDF$chart(stacked = T)
     nf_eventDF$yAxis(axisLabel = textX)
     nf_eventDF$setTemplate(afterScript='<style> svg text {font-size: 9px;}</style>')
@@ -500,7 +502,7 @@ output$FatalbyLocation <- renderLeaflet({
   
 
   leaflet(mapdata) %>%
-    addProviderTiles("CartoDB.Positron") %>%
+    addProviderTiles("Stamen.Watercolor", options = providerTileOptions(opacity = 0.5)) %>%
     setView(lng = mean(mapdatalocations$Longitude),
                        lat = mean(mapdatalocations$Latitude),
                        zoom=4) %>%
